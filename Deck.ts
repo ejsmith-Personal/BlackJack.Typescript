@@ -96,18 +96,18 @@ export class Deck{
         this._deck.sort
     }
     // iterates through the deck and prints info on each card
-    PrintAllCardInfo(): string {
-        this._deck.forEach(element => {
-            this._currentCardInfo = element.PrintCardNameAndStatus();
-            //console.log(this._currentCardInfo);
+    PrintAllCardInfo(): void {
+        this._deck.forEach(card => {
+            this._currentCardInfo = card.PrintCardNameAndStatus();
+            console.log(this._currentCardInfo);
             });
-        return this._currentCardInfo;
     }
 
     DrawCardAndDeal(player: Player): void {
         const card = this._deck.pop();
         if (card){
             player.ReceiveCard(card);
+            console.log(`${player.GetPlayerName()} receives the ${card.PrintCardNameAndSuit()}\n`);
         } else {
             console.log("No more cards in the deck");
         }
@@ -118,5 +118,9 @@ export class Deck{
         this.DrawCardAndDeal(dealer);
         this.DrawCardAndDeal(player1);
         this.DrawCardAndDeal(dealer);
+    }
+
+    ReceiveDiscardCards(card: Card): void {
+        this._deck.push(card);
     }
 }

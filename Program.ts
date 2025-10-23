@@ -8,7 +8,8 @@ const _deck = new Deck();
 
 const newGame = new GameRunner(Eric, Dealer, _deck);
 newGame.BeginGame();
-//newGame.BeginRound();
+newGame.BeginRound();
+newGame.EndRound();
 
 
 // const _deck =  new Deck()

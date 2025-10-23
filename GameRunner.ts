@@ -8,7 +8,8 @@ const rl = readline.createInterface({input: process.stdin, output: process.stdou
 export class GameRunner{
     public _dealer: Player;
     public _player1: Player;
-    public _deck: Deck;
+    public _drawDeck: Deck;
+    public _discardDeck: Deck;
     public currentBet: number;
     public playerNameEntry: string;
     public playerDepositEntry: number;
@@ -16,7 +17,7 @@ export class GameRunner{
     constructor(Dealer: Player, Player1: Player, Deck: Deck){
         this._dealer = Dealer;
         this._player1 = Player1;
-        this._deck = Deck;
+        this._drawDeck = Deck;
     }
 
     BeginGame(): void {
@@ -26,8 +27,9 @@ export class GameRunner{
         this._player1 = new Player(this.playerNameEntry, this.playerDepositEntry, false);
         this._dealer = new Player("Dealer", 10001, true)
         
-        this._deck.CreateDeck();
-        this._deck.ShuffleDeck();
+        this._discardDeck = new Deck();
+        this._drawDeck.CreateDeck();
+        this._drawDeck.ShuffleDeck();
     }
 
     PrintGameInformation(): void {
@@ -35,18 +37,27 @@ export class GameRunner{
         this._dealer.PrintHandInfo();
         var name = this._player1.GetPlayerName();
         var total = this._player1.GetHandValue(); 
-        console.log(`${name} has a hand total of ${total} and the current bet is ${this.currentBet}`);
+        console.log(`${name} has a hand total of ${total} and the current bet is ${this.currentBet}\n`);
         name = this._dealer.GetPlayerName();
         total = this._dealer.GetHandValue();
-        console.log(`${name} has a hand total of ${total}`);
+        console.log(`${name} has a hand total of ${total}\n`);
         // console.log(this._dealer.GetHandValue());
     }
 
-    RequestPlayerToHit(): string {
+    RequestPlayerToHit(player: Player): void {
         // const requestPlayerHit = require("Would the player like to hit? Y/N?")
         // return requestPlayerHit;
-        return "hello";
+        var playerHitOrStay: string;
+        playerHitOrStay = player.HitOrStay();
+        if (playerHitOrStay == "hit"){
+            this._drawDeck.DrawCardAndDeal(player);
+            console.log(`Player ${player.GetPlayerName()} current hand value: ${player.GetHandValue()}`);
+        }
+        else {
+            console.log(`${player.GetPlayerName()} will stay with ${player.GetHandValue()}`);
+        }
     }
+
 
     BeginRound(): void {
         // const playerBetInput = require('Enter the amount of your bet');
@@ -54,8 +65,21 @@ export class GameRunner{
         // if (this._player1.CheckCurrentMoney() > currentBet){
         //     this._player1.BetMoney(currentBet);
         // }
-        this._deck.DealStartingHand(this._dealer, this._player1);
+        this.currentBet = 100;
+        this._player1.BetMoney(this.currentBet);
+        this._drawDeck.DealStartingHand(this._dealer, this._player1);
         this.PrintGameInformation();
+        this.RequestPlayerToHit(this._player1);
+    }
+
+    EndRound(): void {
+        //Need a method to pay out the player bet/subtract from total.
+        this.DiscardCards(this._discardDeck, this._dealer);
+        this.DiscardCards(this._discardDeck, this._player1);
+        console.log("Round has ended");
+        this._dealer.PrintHandInfo();
+        this._player1.PrintHandInfo();
+
     }
 
     // async function EnterPlayerInformation2(): Promise<void> {
@@ -87,17 +111,30 @@ export class GameRunner{
     }
 
     RequestPlayerName(): void{
-        rl.question("Please enter your player Name \n", (userInput)=>{
-        this.playerNameEntry = String(userInput);
-        console.log(`Welcome to the game ${this.playerNameEntry}`);
-        rl.close();
-    });
-}
-
+        this.playerNameEntry = "Eric";
+        // rl.question("Please enter your player Name \n", (userInput)=>{
+        // this.playerNameEntry = String(userInput);
+        // console.log(`Welcome to the game ${this.playerNameEntry}`);
+        // rl.close();
+    }
 
     RequestPlayerDeposit(): void{
-        var playerDeposit: number;
-        console.log("Please enter your deposit:");
-        playerDeposit = Number(rl.prompt());
+        this.playerDepositEntry = 500;
+        // var playerDeposit: number;
+        // console.log("Please enter your deposit:");
+        // playerDeposit = Number(rl.prompt());
+    }
+
+    DiscardCards(discardDeck: Deck, player: Player): void {
+    //iterate through the cards that the player has
+    player.CurrentCards.forEach(card => {
+        // for each cards in the players hand. Add it to the discard it to the discard pile.
+        var currentCard = card
+        this._discardDeck.ReceiveDiscardCards(card);
+        card.TurnCardFaceUp();
+        player.DiscardCards();
+        console.log(card.PrintCardNameAndSuit)
+        });
     }
 }
+

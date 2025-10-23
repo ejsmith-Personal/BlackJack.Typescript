@@ -1,4 +1,5 @@
 import { Card } from "./Card.ts"
+import { Deck } from "./Deck.ts"
 
 export class Player{
     private Name: string;
@@ -58,4 +59,14 @@ export class Player{
     BetMoney(bet: number): void {
         this.GamblingMoney =- bet;
     }
-}   
+
+    HitOrStay(): string {
+        var userInput: string = "hit";
+        return userInput;
+    }
+
+    DiscardCards(): void {
+        this.CurrentCards = [];
+    }
+}
+
