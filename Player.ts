@@ -46,6 +46,22 @@ export class Player{
         return handTotal;
     }
 
+    IsDealerCheck(): boolean {
+        if(this.IsDealer == true){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    SetPlayerName(playerName: string): void {
+        this.Name = playerName;
+    }
+
+    DepositMoney(deposit: number): void {
+        this.GamblingMoney = deposit;
+    }
+
     GetPlayerName(): string {
         const playerName = this.Name;
         return playerName;

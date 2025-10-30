@@ -8,6 +8,7 @@ const rl = readline.createInterface({input: process.stdin, output: process.stdou
 export class GameRunner{
     public _dealer: Player;
     public _player1: Player;
+    public currentPlayers: Player[];
     public _drawDeck: Deck;
     public _discardDeck: Deck;
     public currentBet: number;
@@ -15,17 +16,16 @@ export class GameRunner{
     public playerDepositEntry: number;
 
     constructor(Dealer: Player, Player1: Player, Deck: Deck){
-        this._dealer = Dealer;
-        this._player1 = Player1;
+        this.currentPlayers = [];
+        this._dealer = new Player ("Dealer", 99999, true);
+        this._player1 = new Player("Placeholder", 0, false);
+        this.currentPlayers.push(this._dealer, this._player1)
         this._drawDeck = Deck;
     }
 
     BeginGame(): void {
         this.RequestPlayerName()
         this.RequestPlayerDeposit();
-        
-        this._player1 = new Player(this.playerNameEntry, this.playerDepositEntry, false);
-        this._dealer = new Player("Dealer", 10001, true)
         
         this._discardDeck = new Deck();
         this._drawDeck.CreateDeck();
@@ -77,8 +77,7 @@ export class GameRunner{
         this.DiscardCards(this._discardDeck, this._dealer);
         this.DiscardCards(this._discardDeck, this._player1);
         console.log("Round has ended");
-        this._dealer.PrintHandInfo();
-        this._player1.PrintHandInfo();
+        this.RequestPlayAnotherRound("N");
 
     }
 
@@ -111,7 +110,13 @@ export class GameRunner{
     }
 
     RequestPlayerName(): void{
-        this.playerNameEntry = "Eric";
+        this.currentPlayers.forEach(player => {
+            //Go through the array of players and check if any given player is the dealer.
+            if(player.IsDealerCheck() == false){
+                //request player name
+                player.SetPlayerName("EricNew");
+            }
+        })
         // rl.question("Please enter your player Name \n", (userInput)=>{
         // this.playerNameEntry = String(userInput);
         // console.log(`Welcome to the game ${this.playerNameEntry}`);
@@ -119,7 +124,11 @@ export class GameRunner{
     }
 
     RequestPlayerDeposit(): void{
-        this.playerDepositEntry = 500;
+        this.currentPlayers.forEach(player => {
+            if(player.IsDealerCheck() == false){
+                player.DepositMoney(500);
+            }
+        })
         // var playerDeposit: number;
         // console.log("Please enter your deposit:");
         // playerDeposit = Number(rl.prompt());
@@ -133,8 +142,16 @@ export class GameRunner{
         this._discardDeck.ReceiveDiscardCards(card);
         card.TurnCardFaceUp();
         player.DiscardCards();
-        console.log(card.PrintCardNameAndSuit)
         });
+    }
+
+    RequestPlayAnotherRound(answer: string): void {
+        if(answer == "Y"){
+            this.BeginRound()
+        }
+        else {
+            process.exit();
+        }
     }
 }
 
