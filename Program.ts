@@ -2,11 +2,9 @@ import { Player } from "./Player.ts"
 import {GameRunner} from "./GameRunner.ts"
 import {Deck} from "./Deck.ts"
 
-const Eric = new Player("Eric", 25, false);
-const Dealer = new Player("Dealer", 10000, true);
 const _deck = new Deck();
 
-const newGame = new GameRunner(Eric, Dealer, _deck);
+const newGame = new GameRunner(_deck);
 newGame.BeginGame();
 newGame.BeginRound();
 newGame.EndRound();

@@ -15,7 +15,7 @@ export class GameRunner{
     public playerNameEntry: string;
     public playerDepositEntry: number;
 
-    constructor(Dealer: Player, Player1: Player, Deck: Deck){
+    constructor(Deck: Deck){
         this.currentPlayers = [];
         this._dealer = new Player ("Dealer", 99999, true);
         this._player1 = new Player("Placeholder", 0, false);
@@ -52,8 +52,7 @@ export class GameRunner{
         if (playerHitOrStay == "hit"){
             this._drawDeck.DrawCardAndDeal(player);
             console.log(`Player ${player.GetPlayerName()} current hand value: ${player.GetHandValue()}`);
-        }
-        else {
+        } else {
             console.log(`${player.GetPlayerName()} will stay with ${player.GetHandValue()}`);
         }
     }
@@ -69,8 +68,31 @@ export class GameRunner{
         this._player1.BetMoney(this.currentBet);
         this._drawDeck.DealStartingHand(this._dealer, this._player1);
         this.PrintGameInformation();
-        this.RequestPlayerToHit(this._player1);
+        // this.RequestPlayerToHit(this._player1);
+        this.currentPlayers.forEach(player => {
+            this.PlayerTurn(player);
+        })
     }
+
+    PlayerTurn(player: Player): void {
+        if(player.IsDealerCheck() == false){
+            this.RequestPlayerToHit(player);
+            if(player.GetHandValue() > 21){
+                console.log(`You have ${player.GetHandValue()}. You have busted!`);
+                player.DiscardCards();
+            }
+            //need logic to continue asking if player would like to hit. FOr now we'll do nothing just to exit the loop.
+        }
+        if (player.IsDealerCheck() == true){
+            while(player.GetHandValue() < 16){
+                this._drawDeck.DrawCardAndDeal(player)
+                if(player.GetHandValue() > 21){
+                    console.log(`The dealer has ${player.GetHandValue()}. The dealer has busted!`)
+                };
+            }
+        }
+    }
+
 
     EndRound(): void {
         //Need a method to pay out the player bet/subtract from total.
