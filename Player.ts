@@ -1,12 +1,17 @@
 import { Card } from "./Card.ts"
 import { Deck } from "./Deck.ts"
+import * as readline from "readline"
+
+const rl = readline.createInterface({input: process.stdin, output: process.stdout})
 
 export class Player{
     private Name: string;
     public CurrentCards: Card[];
     private GamblingMoney: number;
     private IsDealer: boolean;
-    private cardInForLoop: Card;
+    private CardInForLoop: Card;
+    public CurrentBet: number;
+    private IsBusted: boolean;
 
     constructor(name: string, money: number, dealer: boolean){
 
@@ -14,6 +19,7 @@ export class Player{
         this.GamblingMoney = money;
         this.IsDealer = dealer;
         this.CurrentCards = [];
+        this.CurrentBet = 0;
     }  
 
     ReceiveCard(card: Card): void {
@@ -27,20 +33,23 @@ export class Player{
     }
 
     PrintHandInfo(): void {
+        console.log(`${this.GetPlayerName()} has ${this.GetHandValue()}`);
         this.CurrentCards.forEach((card) => {
-            this.cardInForLoop = card;
+            this.CardInForLoop = card;
+
             if(card.faceUp == true){
-            console.log(`${this.Name} has ${this.cardInForLoop.PrintCardNameAndSuit()} card.`)
+            console.log(`${this.Name} has ${this.CardInForLoop.PrintCardNameAndSuit()} card.`)
                 } else {
                 console.log(`${this.Name} has a face down card.`)
                 }
         });
+        console.log("\n")
     }
 
     GetHandValue(): number {
         var handTotal = 0;
         this.CurrentCards.forEach((card) => {
-            this.cardInForLoop = card;
+            this.CardInForLoop = card;
             handTotal += card.cardValue;
         });
         return handTotal;
@@ -73,16 +82,33 @@ export class Player{
     }
 
     BetMoney(bet: number): void {
+        this.CurrentBet = bet;
         this.GamblingMoney =- bet;
     }
 
     HitOrStay(): string {
-        var userInput: string = "hit";
+        var userInput: string;
+        if(this.GetHandValue() > 11){
+        userInput = "stay";
         return userInput;
+        } else {
+            userInput = "hit"
+            return userInput;
+
+        }
+        
     }
 
     DiscardCards(): void {
         this.CurrentCards = [];
+    }
+
+    BustPlayer(isBusted: boolean): void {
+        this.IsBusted = isBusted;
+    }
+
+    IsPlayerBusted(): boolean {
+        return this.IsBusted;
     }
 }
 

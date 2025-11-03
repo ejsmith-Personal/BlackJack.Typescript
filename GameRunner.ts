@@ -2,6 +2,8 @@ import { Deck } from "./Deck.ts";
 import { Player } from "./Player.ts";
 import * as readline from "readline"
 import { createInterface } from 'node:readline/promises';
+import { resolve } from "node:dns";
+import { promisify } from "node:util";
 
 const rl = readline.createInterface({input: process.stdin, output: process.stdout})
 
@@ -23,13 +25,101 @@ export class GameRunner{
         this._drawDeck = Deck;
     }
 
-    BeginGame(): void {
-        this.RequestPlayerName()
+    GameSetup(): void {
+
+        this.EnterPlayerInformation()
         this.RequestPlayerDeposit();
-        
+        this.BeginGame()
+    }
+    BeginGame(): void {
+
         this._discardDeck = new Deck();
         this._drawDeck.CreateDeck();
         this._drawDeck.ShuffleDeck();
+        this.BeginRound()
+    }
+
+    BeginRound(): void {
+        // const playerBetInput = require('Enter the amount of your bet');
+        // const currentBet = playerBetInput !== null ? parseInt(playerBetInput) : 0;
+        // if (this._player1.CheckCurrentMoney() > currentBet){
+        //     this._player1.BetMoney(currentBet);
+        // }
+        console.log("----------Beginning Round----------");
+        //logic for betting
+        // rl.question(`${this._player1.GetPlayerName()}. How much would you like to bet this round?\n`, (userInput)=>{
+        //     this.currentBet = Number(userInput);
+        //     console.log(`${this._player1.GetPlayerName()} has bet ${this.currentBet}`)
+        // });
+        console.log("Here is the place where you'll be asked for a bet amount");
+        this.currentBet = 100;
+        this._player1.BetMoney(this.currentBet);
+        this._drawDeck.DealStartingHand(this._dealer, this._player1);
+        this.PrintGameInformation();
+        // this.RequestPlayerToHit(this._player1);
+        this.currentPlayers.forEach(player => {
+            player.BustPlayer(false);
+            this.PlayerTurn(player);
+        })
+        this.EndRound();
+    }
+
+    PlayerTurn(player: Player): void {
+        console.log(`-----Player Turn: ${player.GetPlayerName()}`)
+        if(player.IsDealerCheck() == false){
+            this.RequestPlayerToHit(player);
+            if(player.GetHandValue() > 21){
+                console.log(`You have ${player.GetHandValue()}. You have busted!`);
+                player.BustPlayer(true);
+                // commenting this out because the EndRound() method already discards. Even though techincally it should happen here.
+                //player.DiscardCards();
+            }
+            //need logic to continue asking if player would like to hit. FOr now we'll do nothing just to exit the loop.
+        }
+        if (player.IsDealerCheck() == true){
+            while(player.GetHandValue() < 16){
+                this._drawDeck.DrawCardAndDeal(player)
+                console.log(`The dealer now has ${player.GetHandValue()}`)
+                if(player.GetHandValue() > 16 && player.GetHandValue() < 22){
+                    console.log(`The dealer now has ${player.GetHandValue()}`)
+                }
+                if(player.GetHandValue() > 21){
+                    console.log(`The dealer has ${player.GetHandValue()}. The dealer has busted!`)
+                    player.BustPlayer(true);
+                };
+            }
+        }
+    }
+
+    EndRound(): void {
+        var dealerHandTotal = this._dealer.GetHandValue();
+        var everyoneBusted: boolean;
+        if(this._dealer.IsPlayerBusted() && this._player1.IsPlayerBusted())
+            everyoneBusted = true;
+        //Need a method to pay out the player bet/subtract from total.
+        this.currentPlayers.forEach(player => {
+            //player beats the dealer
+            if(player.GetHandValue() > dealerHandTotal && player.IsPlayerBusted() == false){
+                console.log(`Congratulations ${player.GetPlayerName()} you have won ${player.CurrentBet}!`);
+                player.DepositMoney(player.CurrentBet* 2);
+                console.log(`Your winnings total is ${player.CheckCurrentMoney()}`)
+            }
+            //dealer beats the player
+            if(player.GetHandValue() < dealerHandTotal || player.IsPlayerBusted() == true){
+                console.log(`Dealer has ${dealerHandTotal}, you have ${player.GetHandValue()}. You lose $${player.CurrentBet}`)
+                player.CurrentBet = 0; 
+            }
+            //dealer and player have the same hand total.
+            if(player.GetHandValue() == dealerHandTotal && player.GetPlayerName() !== "Dealer" && everyoneBusted !== true){
+                console.log(`The dealer and ${player.GetPlayerName()} have the same hand total of: ${dealerHandTotal}. Push!`)
+                player.DepositMoney(player.CurrentBet);
+            }
+        });
+        this.DiscardCards(this._discardDeck, this._dealer);
+        this.DiscardCards(this._discardDeck, this._player1);
+        console.log("----------Round has ended-----------");
+        this.RequestPlayAnotherRound();
+
     }
 
     PrintGameInformation(): void {
@@ -57,65 +147,17 @@ export class GameRunner{
         }
     }
 
+    async EnterPlayerInformation2(player: Player): Promise<void> {
+        const question = promisify(rl.question).bind(rl)
+        const playerName = await question("Please enter your player name \n");
 
-    BeginRound(): void {
-        // const playerBetInput = require('Enter the amount of your bet');
-        // const currentBet = playerBetInput !== null ? parseInt(playerBetInput) : 0;
-        // if (this._player1.CheckCurrentMoney() > currentBet){
-        //     this._player1.BetMoney(currentBet);
-        // }
-        this.currentBet = 100;
-        this._player1.BetMoney(this.currentBet);
-        this._drawDeck.DealStartingHand(this._dealer, this._player1);
-        this.PrintGameInformation();
-        // this.RequestPlayerToHit(this._player1);
-        this.currentPlayers.forEach(player => {
-            this.PlayerTurn(player);
-        })
+        player.SetPlayerName(String(playerName));
+        console.log(`Welcome to the game ${playerName}`)
+        rl.close();
     }
-
-    PlayerTurn(player: Player): void {
-        if(player.IsDealerCheck() == false){
-            this.RequestPlayerToHit(player);
-            if(player.GetHandValue() > 21){
-                console.log(`You have ${player.GetHandValue()}. You have busted!`);
-                player.DiscardCards();
-            }
-            //need logic to continue asking if player would like to hit. FOr now we'll do nothing just to exit the loop.
-        }
-        if (player.IsDealerCheck() == true){
-            while(player.GetHandValue() < 16){
-                this._drawDeck.DrawCardAndDeal(player)
-                if(player.GetHandValue() > 21){
-                    console.log(`The dealer has ${player.GetHandValue()}. The dealer has busted!`)
-                };
-            }
-        }
-    }
-
-
-    EndRound(): void {
-        //Need a method to pay out the player bet/subtract from total.
-        this.DiscardCards(this._discardDeck, this._dealer);
-        this.DiscardCards(this._discardDeck, this._player1);
-        console.log("Round has ended");
-        this.RequestPlayAnotherRound("N");
-
-    }
-
-    // async function EnterPlayerInformation2(): Promise<void> {
-    //     var playerDeposit: number;
-    //     this._dealer = new Player("Dealer", 10001, true)
-    //     const playerNameEntry = await rl.question("Please enter your player Name \n", (userInput)=>{
-    //             this.playerNameEntry = String(userInput);;
-    //             console.log(`Welcome to the game ${playerNameEntry}`);
-    //         rl.close();
-    //     });
-    // }
 
     EnterPlayerInformation(): void {
         var playerDeposit: number;
-        this._dealer = new Player("Dealer", 10001, true)
         rl.question("Please enter your player Name \n", (userInput)=>{
 
                 console.log(`Welcome to the game ${this.playerNameEntry}`);
@@ -136,7 +178,7 @@ export class GameRunner{
             //Go through the array of players and check if any given player is the dealer.
             if(player.IsDealerCheck() == false){
                 //request player name
-                player.SetPlayerName("EricNew");
+                player.SetPlayerName("Eric");
             }
         })
         // rl.question("Please enter your player Name \n", (userInput)=>{
@@ -167,7 +209,13 @@ export class GameRunner{
         });
     }
 
-    RequestPlayAnotherRound(answer: string): void {
+    async RequestPlayAnotherRound(): Promise<void> {
+        var answer = "N"
+        await rl.question("Would you like to play another round? \n", (userInput)=>{
+            answer = userInput;
+                rl.close();
+                
+        })
         if(answer == "Y"){
             this.BeginRound()
         }
