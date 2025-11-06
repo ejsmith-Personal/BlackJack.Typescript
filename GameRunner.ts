@@ -21,13 +21,13 @@ export class GameRunner{
         this.currentPlayers = [];
         this._dealer = new Player ("Dealer", 99999, true);
         this._player1 = new Player("Placeholder", 0, false);
-        this.currentPlayers.push(this._dealer, this._player1)
+        this.currentPlayers.push(this._player1, this._dealer)
         this._drawDeck = Deck;
     }
 
     GameSetup(): void {
 
-        this.EnterPlayerInformation()
+        this.RequestPlayAnotherRound()
         this.RequestPlayerDeposit();
         this.BeginGame()
     }
@@ -45,17 +45,19 @@ export class GameRunner{
         // if (this._player1.CheckCurrentMoney() > currentBet){
         //     this._player1.BetMoney(currentBet);
         // }
-        console.log("----------Beginning Round----------");
+        console.log("----------Beginning Round----------\n");
         //logic for betting
         // rl.question(`${this._player1.GetPlayerName()}. How much would you like to bet this round?\n`, (userInput)=>{
         //     this.currentBet = Number(userInput);
         //     console.log(`${this._player1.GetPlayerName()} has bet ${this.currentBet}`)
         // });
-        console.log("Here is the place where you'll be asked for a bet amount");
+        //Left off here 11/5/2025. Is the player making the bet not the same one as losing the hand somehow?
+        console.log("Here is the place where you'll be asked for a bet amount \n");
         this.currentBet = 100;
         this._player1.BetMoney(this.currentBet);
+        console.log(`${this._player1.CheckCurrentMoney()}`)
         this._drawDeck.DealStartingHand(this._dealer, this._player1);
-        this.PrintGameInformation();
+        // this.PrintGameInformation();
         // this.RequestPlayerToHit(this._player1);
         this.currentPlayers.forEach(player => {
             player.BustPlayer(false);
@@ -65,28 +67,35 @@ export class GameRunner{
     }
 
     PlayerTurn(player: Player): void {
-        console.log(`-----Player Turn: ${player.GetPlayerName()}`)
-        if(player.IsDealerCheck() == false){
-            this.RequestPlayerToHit(player);
-            if(player.GetHandValue() > 21){
-                console.log(`You have ${player.GetHandValue()}. You have busted!`);
-                player.BustPlayer(true);
+        console.log(`-----Player Turn: ${player.GetPlayerName()}-----`)
+
+            if(player.IsDealerCheck() == false){
+                player.PrintHandInfo();
+                this.RequestPlayerToHit(player);
+                if(player.GetHandValue() > 21){
+                    console.log(`You have ${player.GetHandValue()}. You have busted!`);
+                    player.BustPlayer(true);
                 // commenting this out because the EndRound() method already discards. Even though techincally it should happen here.
                 //player.DiscardCards();
             }
             //need logic to continue asking if player would like to hit. FOr now we'll do nothing just to exit the loop.
         }
-        if (player.IsDealerCheck() == true){
-            while(player.GetHandValue() < 16){
-                this._drawDeck.DrawCardAndDeal(player)
-                console.log(`The dealer now has ${player.GetHandValue()}`)
-                if(player.GetHandValue() > 16 && player.GetHandValue() < 22){
-                    console.log(`The dealer now has ${player.GetHandValue()}`)
+            if (player.IsDealerCheck() == true){
+                player.CurrentCards[1]?.TurnCardFaceUp();
+                player.PrintHandInfo();
+                while(player.GetHandValue() <= 16){
+                    this._drawDeck.DrawCardAndDeal(player, false)
+                    console.log(`The dealer now has ${player.GetHandValue()}.`)
+                    if(player.GetHandValue() > 16 && player.GetHandValue() < 22){
+                    console.log(`The dealer now has ${player.GetHandValue()}.`)
                 }
-                if(player.GetHandValue() > 21){
+                    if(player.GetHandValue() > 21){
                     console.log(`The dealer has ${player.GetHandValue()}. The dealer has busted!`)
                     player.BustPlayer(true);
                 };
+            }
+            if (player.IsPlayerBusted() == false){
+            console.log(`The ${player.GetPlayerName()} stay with ${player.GetHandValue()}.`)
             }
         }
     }
@@ -95,6 +104,7 @@ export class GameRunner{
         var dealerHandTotal = this._dealer.GetHandValue();
         var everyoneBusted: boolean;
         if(this._dealer.IsPlayerBusted() && this._player1.IsPlayerBusted())
+            //I need to look at this. This isn't a real situation.
             everyoneBusted = true;
         //Need a method to pay out the player bet/subtract from total.
         this.currentPlayers.forEach(player => {
@@ -103,23 +113,27 @@ export class GameRunner{
                 console.log(`Congratulations ${player.GetPlayerName()} you have won ${player.CurrentBet}!`);
                 player.DepositMoney(player.CurrentBet* 2);
                 console.log(`Your winnings total is ${player.CheckCurrentMoney()}`)
+                console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.`)
             }
             //dealer beats the player
             if(player.GetHandValue() < dealerHandTotal || player.IsPlayerBusted() == true){
                 console.log(`Dealer has ${dealerHandTotal}, you have ${player.GetHandValue()}. You lose $${player.CurrentBet}`)
                 player.CurrentBet = 0; 
+                console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.`)
             }
             //dealer and player have the same hand total.
             if(player.GetHandValue() == dealerHandTotal && player.GetPlayerName() !== "Dealer" && everyoneBusted !== true){
                 console.log(`The dealer and ${player.GetPlayerName()} have the same hand total of: ${dealerHandTotal}. Push!`)
                 player.DepositMoney(player.CurrentBet);
+                console.log(`${player.GetPlayerName()} receives their $${String(player.CurrentBet)} back.`)
+                console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.`)
             }
         });
+
         this.DiscardCards(this._discardDeck, this._dealer);
         this.DiscardCards(this._discardDeck, this._player1);
         console.log("----------Round has ended-----------");
         this.RequestPlayAnotherRound();
-
     }
 
     PrintGameInformation(): void {
@@ -140,10 +154,10 @@ export class GameRunner{
         var playerHitOrStay: string;
         playerHitOrStay = player.HitOrStay();
         if (playerHitOrStay == "hit"){
-            this._drawDeck.DrawCardAndDeal(player);
-            console.log(`Player ${player.GetPlayerName()} current hand value: ${player.GetHandValue()}`);
+            this._drawDeck.DrawCardAndDeal(player, false);
+            console.log(`${player.GetPlayerName()} has hit. Current hand value: ${player.GetHandValue()}\n`);
         } else {
-            console.log(`${player.GetPlayerName()} will stay with ${player.GetHandValue()}`);
+            console.log(`${player.GetPlayerName()} will stay with ${player.GetHandValue()}\n`);
         }
     }
 

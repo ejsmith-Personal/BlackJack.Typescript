@@ -100,24 +100,39 @@ export class Deck{
         this._deck.forEach(card => {
             this._currentCardInfo = card.PrintCardNameAndStatus();
             console.log(this._currentCardInfo);
-            });
+        });
     }
 
-    DrawCardAndDeal(player: Player): void {
+    DrawCardAndDeal(player: Player, isOpeningRound: boolean): void {
         const card = this._deck.pop();
+        if (isOpeningRound){
         if (card){
             player.ReceiveCard(card);
-            console.log(`${player.GetPlayerName()} receives the ${card.PrintCardNameAndSuit()}\n`);
+            if(card.faceUp){
+                console.log(`${player.GetPlayerName()} receives the ${card.PrintCardNameAndSuit()}\n`);
+            }
+            if(card.faceUp == false){
+                console.log(`${player.GetPlayerName()} receives a facedown card.\n`)
+            }
+            } else {
+                console.log("No more cards in the deck");
+        }
+    }
+        if(isOpeningRound == false){
+            if (card){
+                player.ReceiveCard(card);
+                    console.log(`${player.GetPlayerName()} receives the ${card.PrintCardNameAndSuit()}\n`);
         } else {
             console.log("No more cards in the deck");
         }
     }
+}
 
     DealStartingHand(dealer: Player, player1: Player): void {
-        this.DrawCardAndDeal(player1);
-        this.DrawCardAndDeal(dealer);
-        this.DrawCardAndDeal(player1);
-        this.DrawCardAndDeal(dealer);
+        this.DrawCardAndDeal(player1, true);
+        this.DrawCardAndDeal(dealer, true);
+        this.DrawCardAndDeal(player1, true);
+        this.DrawCardAndDeal(dealer, true);
     }
 
     ReceiveDiscardCards(card: Card): void {

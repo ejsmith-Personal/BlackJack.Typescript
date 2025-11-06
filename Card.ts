@@ -24,7 +24,7 @@ export class Card{
     TurnCardFaceUp(): void {
         if(this.faceUp == false){
         this.faceUp = true;
-        console.log(`The ${this.PrintCardNameAndSuit()} is now face up.`)
+        // console.log(`The ${this.PrintCardNameAndSuit()} is now face up.`)
         }
 
     }

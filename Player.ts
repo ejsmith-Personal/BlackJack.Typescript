@@ -33,17 +33,15 @@ export class Player{
     }
 
     PrintHandInfo(): void {
-        console.log(`${this.GetPlayerName()} has ${this.GetHandValue()}`);
         this.CurrentCards.forEach((card) => {
             this.CardInForLoop = card;
-
             if(card.faceUp == true){
             console.log(`${this.Name} has ${this.CardInForLoop.PrintCardNameAndSuit()} card.`)
                 } else {
                 console.log(`${this.Name} has a face down card.`)
                 }
         });
-        console.log("\n")
+        console.log(`${this.GetPlayerName()} has ${this.GetHandValue()}.\n`);
     }
 
     GetHandValue(): number {
