@@ -66,7 +66,7 @@ export class Player{
     }
 
     DepositMoney(deposit: number): void {
-        this.GamblingMoney = deposit;
+        this.GamblingMoney = this.GamblingMoney + deposit;
     }
 
     GetPlayerName(): string {
@@ -81,7 +81,7 @@ export class Player{
 
     BetMoney(bet: number): void {
         this.CurrentBet = bet;
-        this.GamblingMoney =- bet;
+        this.GamblingMoney = this.GamblingMoney - bet;
     }
 
     HitOrStay(): string {
@@ -91,6 +91,7 @@ export class Player{
         return userInput;
         } else {
             userInput = "hit"
+            console.log(`${this.GetPlayerName()} will hit.\n`)
             return userInput;
 
         }

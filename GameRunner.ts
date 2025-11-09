@@ -40,12 +40,12 @@ export class GameRunner{
     }
 
     BeginRound(): void {
+        console.log("----------Beginning Round----------\n");
         // const playerBetInput = require('Enter the amount of your bet');
         // const currentBet = playerBetInput !== null ? parseInt(playerBetInput) : 0;
         // if (this._player1.CheckCurrentMoney() > currentBet){
         //     this._player1.BetMoney(currentBet);
         // }
-        console.log("----------Beginning Round----------\n");
         //logic for betting
         // rl.question(`${this._player1.GetPlayerName()}. How much would you like to bet this round?\n`, (userInput)=>{
         //     this.currentBet = Number(userInput);
@@ -55,11 +55,9 @@ export class GameRunner{
         console.log("Here is the place where you'll be asked for a bet amount \n");
         this.currentBet = 100;
         this._player1.BetMoney(this.currentBet);
-        console.log(`${this._player1.CheckCurrentMoney()}`)
         this._drawDeck.DealStartingHand(this._dealer, this._player1);
-        // this.PrintGameInformation();
-        // this.RequestPlayerToHit(this._player1);
         this.currentPlayers.forEach(player => {
+            //ensuring everyone busted state is false at the beginning of the round.
             player.BustPlayer(false);
             this.PlayerTurn(player);
         })
@@ -84,18 +82,19 @@ export class GameRunner{
                 player.CurrentCards[1]?.TurnCardFaceUp();
                 player.PrintHandInfo();
                 while(player.GetHandValue() <= 16){
+                    console.log(`The ${player.GetPlayerName()} hits.`)
                     this._drawDeck.DrawCardAndDeal(player, false)
-                    console.log(`The dealer now has ${player.GetHandValue()}.`)
+                    //console.log(`The dealer now has ${player.GetHandValue()}.`)
                     if(player.GetHandValue() > 16 && player.GetHandValue() < 22){
-                    console.log(`The dealer now has ${player.GetHandValue()}.`)
+                    console.log(`The ${player.GetPlayerName()} now has ${player.GetHandValue()}.`)
                 }
                     if(player.GetHandValue() > 21){
-                    console.log(`The dealer has ${player.GetHandValue()}. The dealer has busted!`)
+                    console.log(`The dealer has ${player.GetHandValue()}. The dealer has busted!\n`)
                     player.BustPlayer(true);
                 };
             }
             if (player.IsPlayerBusted() == false){
-            console.log(`The ${player.GetPlayerName()} stay with ${player.GetHandValue()}.`)
+            console.log(`The ${player.GetPlayerName()} stay with ${player.GetHandValue()}.\n`)
             }
         }
     }
@@ -109,20 +108,21 @@ export class GameRunner{
         //Need a method to pay out the player bet/subtract from total.
         this.currentPlayers.forEach(player => {
             //player beats the dealer
-            if(player.GetHandValue() > dealerHandTotal && player.IsPlayerBusted() == false){
-                console.log(`Congratulations ${player.GetPlayerName()} you have won ${player.CurrentBet}!`);
+            if(player.GetHandValue() > dealerHandTotal && player.IsPlayerBusted() == false && player.IsDealerCheck() == false
+             || player.IsPlayerBusted() == false && this._dealer.IsPlayerBusted() == true && player.IsDealerCheck() == false){
+                console.log(`Congratulations ${player.GetPlayerName()} you have won $${player.CurrentBet}!`);
                 player.DepositMoney(player.CurrentBet* 2);
-                console.log(`Your winnings total is ${player.CheckCurrentMoney()}`)
+                //console.log(`Your winnings total is ${player.CheckCurrentMoney()}`)
                 console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.`)
             }
             //dealer beats the player
-            if(player.GetHandValue() < dealerHandTotal || player.IsPlayerBusted() == true){
+            if(player.GetHandValue() < dealerHandTotal && this._dealer.IsPlayerBusted() == false || player.IsPlayerBusted() == true && player.IsDealerCheck() == false && this._dealer.IsPlayerBusted() == false ){
                 console.log(`Dealer has ${dealerHandTotal}, you have ${player.GetHandValue()}. You lose $${player.CurrentBet}`)
                 player.CurrentBet = 0; 
                 console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.`)
             }
             //dealer and player have the same hand total.
-            if(player.GetHandValue() == dealerHandTotal && player.GetPlayerName() !== "Dealer" && everyoneBusted !== true){
+            if(player.GetHandValue() == dealerHandTotal && player.IsDealerCheck() == false && everyoneBusted !== true && player.IsDealerCheck() == false){
                 console.log(`The dealer and ${player.GetPlayerName()} have the same hand total of: ${dealerHandTotal}. Push!`)
                 player.DepositMoney(player.CurrentBet);
                 console.log(`${player.GetPlayerName()} receives their $${String(player.CurrentBet)} back.`)
@@ -155,7 +155,7 @@ export class GameRunner{
         playerHitOrStay = player.HitOrStay();
         if (playerHitOrStay == "hit"){
             this._drawDeck.DrawCardAndDeal(player, false);
-            console.log(`${player.GetPlayerName()} has hit. Current hand value: ${player.GetHandValue()}\n`);
+            console.log(`Current hand value: ${player.GetHandValue()}\n`);
         } else {
             console.log(`${player.GetPlayerName()} will stay with ${player.GetHandValue()}\n`);
         }
