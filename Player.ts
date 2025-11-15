@@ -9,7 +9,6 @@ export class Player{
     public CurrentCards: Card[];
     private GamblingMoney: number;
     private IsDealer: boolean;
-    private CardInForLoop: Card;
     public CurrentBet: number;
     private IsBusted: boolean;
 
@@ -25,18 +24,28 @@ export class Player{
     ReceiveCard(card: Card): void {
         if (this.IsDealer == true && this.CurrentCards.length == 0){
             card.TurnCardFaceUp();
+            console.log(`${this.GetPlayerName()} receives a ${card.PrintCardNameAndSuit()}\n`)
         }
         if (this.IsDealer == false){
             card.TurnCardFaceUp(); 
+            console.log(`${this.GetPlayerName()} receives a ${card.PrintCardNameAndSuit()}\n`)
         }
+        if(this.IsDealer == true && this.CurrentCards.length == 1){
+            console.log(`${this.GetPlayerName()} receives a face down card.\n`)
+        } 
+        if(this.IsDealer == true && this.CurrentCards.length > 1){
+            card.TurnCardFaceUp(); 
+            console.log(`${this.GetPlayerName()} receives a ${card.PrintCardNameAndSuit()}\n`)
+        } 
         this.CurrentCards.push(card);
     }
 
     PrintHandInfo(): void {
+        var cardInForLoop: Card;
         this.CurrentCards.forEach((card) => {
-            this.CardInForLoop = card;
+            cardInForLoop = card;
             if(card.faceUp == true){
-            console.log(`${this.Name} has ${this.CardInForLoop.PrintCardNameAndSuit()} card.`)
+            console.log(`${this.Name} has ${cardInForLoop.PrintCardNameAndSuit()} card.`)
                 } else {
                 console.log(`${this.Name} has a face down card.`)
                 }
@@ -45,11 +54,13 @@ export class Player{
     }
 
     GetHandValue(): number {
+        var cardInForLoop: Card;
         var handTotal = 0;
         this.CurrentCards.forEach((card) => {
-            this.CardInForLoop = card;
+            cardInForLoop = card;
             handTotal += card.cardValue;
         });
+        // need some Ace logic here to handle it's 11 or 1 value.
         return handTotal;
     }
 
@@ -93,9 +104,7 @@ export class Player{
             userInput = "hit"
             console.log(`${this.GetPlayerName()} will hit.\n`)
             return userInput;
-
         }
-        
     }
 
     DiscardCards(): void {

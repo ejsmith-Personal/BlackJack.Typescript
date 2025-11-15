@@ -34,3 +34,5 @@ rl.question(`What is ${num1} + ${num2}? \n`, (userInput)=>{
 rl.on('close', ()=>{
     console.log('Correct');
 })
+
+console.log("This isn't waiting for the response");

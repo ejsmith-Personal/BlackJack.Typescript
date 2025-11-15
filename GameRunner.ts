@@ -4,6 +4,7 @@ import * as readline from "readline"
 import { createInterface } from 'node:readline/promises';
 import { resolve } from "node:dns";
 import { promisify } from "node:util";
+import * as readlineSync from "readline-sync";
 
 const rl = readline.createInterface({input: process.stdin, output: process.stdout})
 
@@ -26,13 +27,11 @@ export class GameRunner{
     }
 
     GameSetup(): void {
-
-        this.RequestPlayAnotherRound()
         this.RequestPlayerDeposit();
         this.BeginGame()
     }
-    BeginGame(): void {
 
+    BeginGame(): void {
         this._discardDeck = new Deck();
         this._drawDeck.CreateDeck();
         this._drawDeck.ShuffleDeck();
@@ -51,11 +50,10 @@ export class GameRunner{
         //     this.currentBet = Number(userInput);
         //     console.log(`${this._player1.GetPlayerName()} has bet ${this.currentBet}`)
         // });
-        //Left off here 11/5/2025. Is the player making the bet not the same one as losing the hand somehow?
         console.log("Here is the place where you'll be asked for a bet amount \n");
         this.currentBet = 100;
         this._player1.BetMoney(this.currentBet);
-        this._drawDeck.DealStartingHand(this._dealer, this._player1);
+        this.DealStartingHand();
         this.currentPlayers.forEach(player => {
             //ensuring everyone busted state is false at the beginning of the round.
             player.BustPlayer(false);
@@ -83,7 +81,8 @@ export class GameRunner{
                 player.PrintHandInfo();
                 while(player.GetHandValue() <= 16){
                     console.log(`The ${player.GetPlayerName()} hits.`)
-                    this._drawDeck.DrawCardAndDeal(player, false)
+                    player.ReceiveCard(this._drawDeck.DrawCard());
+                    //this._drawDeck.DrawCardAndDeal(player, false, this._drawDeck, this._discardDeck)
                     //console.log(`The dealer now has ${player.GetHandValue()}.`)
                     if(player.GetHandValue() > 16 && player.GetHandValue() < 22){
                     console.log(`The ${player.GetPlayerName()} now has ${player.GetHandValue()}.`)
@@ -94,7 +93,7 @@ export class GameRunner{
                 };
             }
             if (player.IsPlayerBusted() == false){
-            console.log(`The ${player.GetPlayerName()} stay with ${player.GetHandValue()}.\n`)
+            console.log(`The ${player.GetPlayerName()} stays with ${player.GetHandValue()}.\n`)
             }
         }
     }
@@ -125,15 +124,15 @@ export class GameRunner{
             if(player.GetHandValue() == dealerHandTotal && player.IsDealerCheck() == false && everyoneBusted !== true && player.IsDealerCheck() == false){
                 console.log(`The dealer and ${player.GetPlayerName()} have the same hand total of: ${dealerHandTotal}. Push!`)
                 player.DepositMoney(player.CurrentBet);
-                console.log(`${player.GetPlayerName()} receives their $${String(player.CurrentBet)} back.`)
-                console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.`)
+                console.log(`${player.GetPlayerName()} receives their $${String(player.CurrentBet)} back.\n`)
+                console.log(`${player.GetPlayerName()} Total Bankroll: $${player.CheckCurrentMoney()}.`)
             }
         });
 
         this.DiscardCards(this._discardDeck, this._dealer);
         this.DiscardCards(this._discardDeck, this._player1);
         console.log("----------Round has ended-----------");
-        this.RequestPlayAnotherRound();
+        this.RequestPlayAnotherRound2();
     }
 
     PrintGameInformation(): void {
@@ -154,7 +153,8 @@ export class GameRunner{
         var playerHitOrStay: string;
         playerHitOrStay = player.HitOrStay();
         if (playerHitOrStay == "hit"){
-            this._drawDeck.DrawCardAndDeal(player, false);
+            player.ReceiveCard(this._drawDeck.DrawCard());
+            // this._drawDeck.DrawCardAndDeal(player, false, this._drawDeck, this._discardDeck);
             console.log(`Current hand value: ${player.GetHandValue()}\n`);
         } else {
             console.log(`${player.GetPlayerName()} will stay with ${player.GetHandValue()}\n`);
@@ -223,13 +223,10 @@ export class GameRunner{
         });
     }
 
-    async RequestPlayAnotherRound(): Promise<void> {
-        var answer = "N"
-        await rl.question("Would you like to play another round? \n", (userInput)=>{
-            answer = userInput;
-                rl.close();
-                
-        })
+        RequestPlayAnotherRound2(){
+        const answer: string = "N"
+        // const answer = readlineSync.question("Would you like to play another round? \n",);
+        console.log(`You entered: ${answer}`);
         if(answer == "Y"){
             this.BeginRound()
         }
@@ -237,5 +234,54 @@ export class GameRunner{
             process.exit();
         }
     }
+
+    async RequestPlayAnotherRound(): Promise<void> {
+        const answer: string = "Y"
+        // const answer = readlineSync.question("Would you like to play another round? \n",);
+        console.log(`You entered: ${answer}`);
+        if(answer == "Y"){
+            this.BeginRound()
+        }
+        else {
+            process.exit();
+        }
+    }
+
+    //I should update this method to do a for each and go through the currentPlayers array instead of taking in each player seperately.
+    DealStartingHand(): void {
+        if (this._drawDeck._deck.length == 0){
+            //Do the method that moves discard deck cards into deck.
+            this.MoveDiscarDeckCardsIntoDrawDeck(this._drawDeck, this._discardDeck);
+            this._drawDeck.ShuffleDeck()
+        }
+        for(let i = 0; i <= 3; i++){
+            var drawnCard = this._drawDeck.DrawCard()
+            if (drawnCard){
+                //For the future I'd like this to be able to iterate through the players to give them a card rather than hardcoding the player and dealer.
+                for (const [index, item] of this.currentPlayers.entries()){
+                    if (index % 2 === 0){
+                        this._player1.ReceiveCard(drawnCard);
+                        var drawnCard = this._drawDeck.DrawCard()
+                        i++
+                        } 
+                    if (index % 2 !== 0){
+                        this._dealer.ReceiveCard(drawnCard);
+                        var drawnCard = this._drawDeck.DrawCard()
+                        i++
+                        }
+                    }
+                }
+            }
+        }
+
+        MoveDiscarDeckCardsIntoDrawDeck(drawDeck: Deck, discardDeck: Deck): void{
+        //iterate through the discardDeck for
+        discardDeck._deck.forEach(card => {
+            var currentCard = card;
+            //for each card, move or copy that card into the drawDeck
+            drawDeck._deck.push(currentCard);
+        });
+    }
 }
+
 
