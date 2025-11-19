@@ -27,6 +27,7 @@ export class GameRunner{
     }
 
     GameSetup(): void {
+        this.RequestPlayerName();
         this.RequestPlayerDeposit();
         this.BeginGame()
     }
@@ -109,7 +110,7 @@ export class GameRunner{
             //player beats the dealer
             if(player.GetHandValue() > dealerHandTotal && player.IsPlayerBusted() == false && player.IsDealerCheck() == false
              || player.IsPlayerBusted() == false && this._dealer.IsPlayerBusted() == true && player.IsDealerCheck() == false){
-                console.log(`Congratulations ${player.GetPlayerName()} you have won $${player.CurrentBet}!`);
+                console.log(`Dealer has ${dealerHandTotal}, you have ${player.GetHandValue()}. Congratulations ${player.GetPlayerName()} you have won $${player.CurrentBet}!`);
                 player.DepositMoney(player.CurrentBet* 2);
                 //console.log(`Your winnings total is ${player.CheckCurrentMoney()}`)
                 console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.`)
@@ -122,17 +123,17 @@ export class GameRunner{
             }
             //dealer and player have the same hand total.
             if(player.GetHandValue() == dealerHandTotal && player.IsDealerCheck() == false && everyoneBusted !== true && player.IsDealerCheck() == false){
-                console.log(`The dealer and ${player.GetPlayerName()} have the same hand total of: ${dealerHandTotal}. Push!`)
+                console.log(`The dealer and ${player.GetPlayerName()} have the same hand total of: ${dealerHandTotal}. Push!\n`)
                 player.DepositMoney(player.CurrentBet);
-                console.log(`${player.GetPlayerName()} receives their $${String(player.CurrentBet)} back.\n`)
-                console.log(`${player.GetPlayerName()} Total Bankroll: $${player.CheckCurrentMoney()}.`)
+                console.log(`${player.GetPlayerName()} receives their $${String(player.CurrentBet)} back.`)
+                console.log(`${player.GetPlayerName()} Total Bankroll: $${player.CheckCurrentMoney()}.\n`)
             }
         });
 
         this.DiscardCards(this._discardDeck, this._dealer);
         this.DiscardCards(this._discardDeck, this._player1);
-        console.log("----------Round has ended-----------");
-        this.RequestPlayAnotherRound2();
+        console.log("----------Round has ended-----------\n");
+        this.RequestPlayAnotherRound();
     }
 
     PrintGameInformation(): void {
@@ -152,7 +153,7 @@ export class GameRunner{
         // return requestPlayerHit;
         var playerHitOrStay: string;
         playerHitOrStay = player.HitOrStay();
-        if (playerHitOrStay == "hit"){
+        if (playerHitOrStay == "H"){
             player.ReceiveCard(this._drawDeck.DrawCard());
             // this._drawDeck.DrawCardAndDeal(player, false, this._drawDeck, this._discardDeck);
             console.log(`Current hand value: ${player.GetHandValue()}\n`);
@@ -191,25 +192,19 @@ export class GameRunner{
         this.currentPlayers.forEach(player => {
             //Go through the array of players and check if any given player is the dealer.
             if(player.IsDealerCheck() == false){
-                //request player name
-                player.SetPlayerName("Eric");
+                const answer = readlineSync.question("What is your player name? \n",);
+                player.SetPlayerName(answer);
             }
         })
-        // rl.question("Please enter your player Name \n", (userInput)=>{
-        // this.playerNameEntry = String(userInput);
-        // console.log(`Welcome to the game ${this.playerNameEntry}`);
-        // rl.close();
     }
 
     RequestPlayerDeposit(): void{
         this.currentPlayers.forEach(player => {
             if(player.IsDealerCheck() == false){
-                player.DepositMoney(500);
+                const answer = readlineSync.question("How much would you like to deposit? \n",);
+                player.DepositMoney(Number(answer));
             }
         })
-        // var playerDeposit: number;
-        // console.log("Please enter your deposit:");
-        // playerDeposit = Number(rl.prompt());
     }
 
     DiscardCards(discardDeck: Deck, player: Player): void {
@@ -220,32 +215,19 @@ export class GameRunner{
         this._discardDeck.ReceiveDiscardCards(card);
         card.TurnCardFaceUp();
         player.DiscardCards();
-        });
-    }
+            });
+        }
 
-        RequestPlayAnotherRound2(){
-        const answer: string = "N"
-        // const answer = readlineSync.question("Would you like to play another round? \n",);
+        RequestPlayAnotherRound(){
+        const answer = readlineSync.question("Would you like to play another round? \n",);
         console.log(`You entered: ${answer}`);
         if(answer == "Y"){
             this.BeginRound()
         }
         else {
             process.exit();
+            }
         }
-    }
-
-    async RequestPlayAnotherRound(): Promise<void> {
-        const answer: string = "Y"
-        // const answer = readlineSync.question("Would you like to play another round? \n",);
-        console.log(`You entered: ${answer}`);
-        if(answer == "Y"){
-            this.BeginRound()
-        }
-        else {
-            process.exit();
-        }
-    }
 
     //I should update this method to do a for each and go through the currentPlayers array instead of taking in each player seperately.
     DealStartingHand(): void {

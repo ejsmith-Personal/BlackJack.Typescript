@@ -1,5 +1,6 @@
 import { Card } from "./Card.ts"
 import { Deck } from "./Deck.ts"
+import * as readlinesync from "readline-sync"
 import * as readline from "readline"
 
 const rl = readline.createInterface({input: process.stdin, output: process.stdout})
@@ -97,14 +98,9 @@ export class Player{
 
     HitOrStay(): string {
         var userInput: string;
-        if(this.GetHandValue() > 11){
-        userInput = "stay";
-        return userInput;
-        } else {
-            userInput = "hit"
-            console.log(`${this.GetPlayerName()} will hit.\n`)
-            return userInput;
-        }
+        const answer = readlinesync.question("Would you like to (H)it or (S)tay? \n",);
+        return answer;
+
     }
 
     DiscardCards(): void {
