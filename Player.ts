@@ -77,13 +77,13 @@ export class Player{
         this.Name = playerName;
     }
 
-    DepositMoney(deposit: number): void {
-        this.GamblingMoney = this.GamblingMoney + deposit;
-    }
-
     GetPlayerName(): string {
         const playerName = this.Name;
         return playerName;
+    }
+
+    DepositMoney(deposit: number): void {
+        this.GamblingMoney = this.GamblingMoney + deposit;
     }
 
     CheckCurrentMoney(): number {
@@ -97,10 +97,19 @@ export class Player{
     }
 
     HitOrStay(): string {
-        var userInput: string;
-        const answer = readlinesync.question("Would you like to (H)it or (S)tay? \n",);
-        return answer;
-
+        var answer = readlinesync.question("Would you like to (H)it or (S)tay? \n",);
+        answer = answer.toString()
+        answer = answer.toUpperCase();
+        switch (answer){
+            case "H":
+                return answer;
+            case "S":
+                return answer;
+            default:
+                console.log("Please enter a valid input");
+                this.HitOrStay();
+                return answer;
+        }
     }
 
     DiscardCards(): void {
