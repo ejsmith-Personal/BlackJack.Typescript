@@ -97,9 +97,7 @@ export class Player{
     }
 
     HitOrStay(): string {
-        var answer = readlinesync.question("Would you like to (H)it or (S)tay? \n",);
-        answer = answer.toString()
-        answer = answer.toUpperCase();
+        var answer = readlinesync.question("Would you like to (H)it or (S)tay? \n",).toUpperCase();
         switch (answer){
             case "H":
                 return answer;

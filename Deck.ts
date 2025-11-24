@@ -84,13 +84,7 @@ export class Deck{
         this._deck.sort
         console.log("The deck has been shuffled.\n");
     }
-    // iterates through the deck and prints info on each card
-    PrintAllCardInfo(): void {
-        this._deck.forEach(card => {
-            this._currentCardInfo = card.PrintCardNameAndStatus();
-            console.log(this._currentCardInfo);
-        });
-    }
+
     //DrawCardAndDeal should only return a card, it shouldn't know about players or what round it is.
     DrawCard(): Card {
         var drawnCard = this._deck.pop()

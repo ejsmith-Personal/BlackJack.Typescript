@@ -41,9 +41,12 @@ export class GameRunner{
 
     BeginRound(): void {
         console.log("----------Beginning Round----------\n");
+        // console.log(`The draw deck has ${this._drawDeck._deck.length}`)
+        // console.log(`The discard deck has ${this._discardDeck._deck.length}`)
         this.currentPlayers.forEach(player => {
             if(player.IsDealerCheck() == false){
         var playerBetInput = readlineSync.question("How much would you like to bet? \n",);
+        //this input checking doesn't totally work since it only does it once. maybe a while loop or something would work here.
         if (Number(playerBetInput)){
                 player.BetMoney(Number(playerBetInput))
         } else {
@@ -84,8 +87,6 @@ export class GameRunner{
                 while(player.GetHandValue() <= 16){
                     console.log(`The ${player.GetPlayerName()} hits.`)
                     player.ReceiveCard(this._drawDeck.DrawCard());
-                    //this._drawDeck.DrawCardAndDeal(player, false, this._drawDeck, this._discardDeck)
-                    //console.log(`The dealer now has ${player.GetHandValue()}.`)
                     if(player.GetHandValue() > 16 && player.GetHandValue() < 22){
                     console.log(`The ${player.GetPlayerName()} now has ${player.GetHandValue()}.`)
                 }
@@ -131,7 +132,6 @@ export class GameRunner{
                 console.log(`${player.GetPlayerName()} Total Bankroll: $${player.CheckCurrentMoney()}.\n`)
             }
         });
-
         this.DiscardCards(this._discardDeck, this._dealer);
         this.DiscardCards(this._discardDeck, this._player1);
         console.log("----------Round has ended-----------\n");
@@ -202,18 +202,23 @@ export class GameRunner{
         }
 
     RequestPlayAnotherRound(){
-        const answer = readlineSync.question("Would you like to play another round? \n",);
-        console.log(`You entered: ${answer}`);
-        if(answer == "Y"){
-            this.BeginRound()
-        } else {
-            process.exit();
+        var answer = readlineSync.question("Would you like to play another round? \n",).toUpperCase();
+        //should probably remove this. No need to tell me what I just did.
+            switch (answer){
+                case "Y":
+                    this.BeginRound();
+                case "N":
+                    process.exit();
+                default:
+                    console.log(`You entered: ${answer}`);
+                    console.log("Please enter a valid input");
+                    this.RequestPlayAnotherRound()
         }
     }
 
     //I should update this method to do a for each and go through the currentPlayers array instead of taking in each player seperately.
     DealStartingHand(): void {
-        if (this._drawDeck._deck.length == 0){
+        if (this._drawDeck._deck.length <= 12){
             //Do the method that moves discard deck cards into deck.
             this.MoveDiscarDeckCardsIntoDrawDeck(this._drawDeck, this._discardDeck);
             this._drawDeck.ShuffleDeck()
@@ -223,14 +228,14 @@ export class GameRunner{
             if (drawnCard){
                 //For the future I'd like this to be able to iterate through the players to give them a card rather than hardcoding the player and dealer.
                 for (const [index, item] of this.currentPlayers.entries()){
-                    if (index % 2 === 0){
+                    if (index % 2 == 0){
                         this._player1.ReceiveCard(drawnCard);
                         var drawnCard = this._drawDeck.DrawCard()
                         i++
                         } 
-                    if (index % 2 !== 0){
+                    else if (index % 2 !== 0){
                         this._dealer.ReceiveCard(drawnCard);
-                        var drawnCard = this._drawDeck.DrawCard()
+                        //var drawnCard = this._drawDeck.DrawCard()
                         i++
                     }
                 }
@@ -238,13 +243,16 @@ export class GameRunner{
         }
     }
 
-        MoveDiscarDeckCardsIntoDrawDeck(drawDeck: Deck, discardDeck: Deck): void{
+    MoveDiscarDeckCardsIntoDrawDeck(drawDeck: Deck, discardDeck: Deck): void{
+        var blankDeck = new Deck();
         //iterate through the discardDeck for
         discardDeck._deck.forEach(card => {
             var currentCard = card;
             //for each card, move or copy that card into the drawDeck
             drawDeck._deck.push(currentCard);
+            
         });
+        discardDeck._deck.length = 0;
     }
 }
 
