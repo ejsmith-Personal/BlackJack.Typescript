@@ -66,7 +66,11 @@ export class GameRunner{
 
     PlayerTurn(player: Player): void {
         console.log(`-----Player Turn: ${player.GetPlayerName()}-----`)
-        //need logic to detect a 21 and automatically pay out 1.5x
+        //will need to be rewritten for multiple players.
+        if(player.GetHandValue() == 21){
+            console.log(`${player.GetPlayerName()} has Blackjack!`)
+            this.EndRound()
+        }
             if(player.IsDealerCheck() == false){
                 player.PrintHandInfo();
                 var lastPlayerAction = this.RequestPlayerToHit(player);
@@ -116,13 +120,13 @@ export class GameRunner{
                 console.log(`Dealer has ${dealerHandTotal}, you have ${player.GetHandValue()}. Congratulations ${player.GetPlayerName()} you have won $${player.CurrentBet}!`);
                 player.DepositMoney(player.CurrentBet* 2);
                 //console.log(`Your winnings total is ${player.CheckCurrentMoney()}`)
-                console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.`)
+                console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.\n`)
             }
             //dealer beats the player
             if(player.GetHandValue() < dealerHandTotal && this._dealer.IsPlayerBusted() == false || player.IsPlayerBusted() == true && player.IsDealerCheck() == false && this._dealer.IsPlayerBusted() == false ){
                 console.log(`Dealer has ${dealerHandTotal}, you have ${player.GetHandValue()}. You lose $${player.CurrentBet}`)
                 player.CurrentBet = 0; 
-                console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.`)
+                console.log(`${player.GetPlayerName()} currently has $${player.CheckCurrentMoney()}.\n`)
             }
             //dealer and player have the same hand total.
             if(player.GetHandValue() == dealerHandTotal && player.IsDealerCheck() == false && everyoneBusted !== true && player.IsDealerCheck() == false){

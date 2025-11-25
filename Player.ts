@@ -54,14 +54,47 @@ export class Player{
         console.log(`${this.GetPlayerName()} has ${this.GetHandValue()}.\n`);
     }
 
-    GetHandValue(): number {
-        var cardInForLoop: Card;
-        var handTotal = 0;
+    // GetHandValue(): number {
+    //     var cardInForLoop: Card;
+    //     var handTotal = 0;
+    //     this.CurrentCards.forEach((card) => {
+    //         cardInForLoop = card;
+    //         handTotal += card.cardValue;
+    //         if(handTotal > 21){
+    //             this.CurrentCards.forEach((card) => {
+    //                 var currentCard: Card;
+    //                 currentCard = card;
+    //                 if(currentCard.cardName == "Ace"){
+    //                     handTotal += card.altAceCardValue;
+    //                 } else {
+    //                     handTotal += card.cardValue;
+    //                 }
+    //             });
+    //         }
+    //     });
+    //     // need some Ace logic here to handle it's 11 or 1 value.
+    //     return handTotal;
+    // }
+
+    GetHandValue(): number{
+        let aceCount = 0;
+        let handTotal = 0;
+        //find out how many aces the player has.
         this.CurrentCards.forEach((card) => {
-            cardInForLoop = card;
-            handTotal += card.cardValue;
+            let currentCard = card;
+            if(currentCard.cardName == "Ace"){
+                aceCount ++
+            }
         });
-        // need some Ace logic here to handle it's 11 or 1 value.
+        this.CurrentCards.forEach((card) => {
+            let currentCard = card;
+            handTotal += card.cardValue;
+            if(handTotal > 21 && aceCount > 0){
+                handTotal = handTotal - 10;
+                aceCount --;
+            }
+        });
+
         return handTotal;
     }
 

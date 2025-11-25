@@ -5,6 +5,7 @@ export class Card{
     public Suit: string;
     public faceUp: boolean
     public cardValue: number;
+    public altAceCardValue: number;
 
     constructor(name: string, suit: string, isFaceUp: boolean, value: number){
         this.cardName = name;
