@@ -135,7 +135,7 @@ export class GameRunner{
         this.DiscardCards(this._discardDeck, this._dealer);
         this.DiscardCards(this._discardDeck, this._player1);
         console.log("----------Round has ended-----------\n");
-        this.RequestPlayAnotherRound();
+        this.MainMenu();
     }
 
     PrintGameInformation(): void {
@@ -264,6 +264,22 @@ export class GameRunner{
                 player.BetMoney(Number(playerBetInput))
             } else {
             playerBetInput = readlineSync.question("Please enter a valid $ amount. How much would you like to bet? \n",);
+        }
+    }
+
+    MainMenu(){
+        var playerInput = readlineSync.question("What would you like to do?\n1.  Play Again.\n2.  Deposit Money\n3.  Exit Game\n")
+        switch(playerInput){
+            case "1":
+                this.BeginRound();
+                break;
+            case "2":
+                this.RequestPlayerDeposit();
+                this.MainMenu()
+            case "3":
+                process.exit();
+            default: 
+                playerInput = readlineSync.question("Please enter valid input.")
         }
     }
 }
