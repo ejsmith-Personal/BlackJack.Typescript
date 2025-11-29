@@ -12,10 +12,7 @@ export class Deck{
 
     CreateDeck(): void {
 
-        this._deck.push(new Card("Two", "Hearts", false, 2));
-        this._deck.push(new Card("Two", "Diamonds", false, 2))
-        this._deck.push(new Card("Two", "Spades", false, 2))
-        this._deck.push(new Card("Two", "Clubs", false, 2))
+
 
         this._deck.push(new Card("Three", "Hearts", false, 3))
         this._deck.push(new Card("Three", "Diamonds", false, 3))
@@ -72,6 +69,11 @@ export class Deck{
         this._deck.push(new Card("King", "Spades", false, 10))
         this._deck.push(new Card("King", "Clubs", false, 10))
 
+        this._deck.push(new Card("Two", "Hearts", false, 2));
+        this._deck.push(new Card("Two", "Diamonds", false, 2))
+        this._deck.push(new Card("Two", "Spades", false, 2))
+        this._deck.push(new Card("Two", "Clubs", false, 2))
+
         this._deck.push(new Card("Ace", "Hearts", false, 11))
         this._deck.push(new Card("Ace", "Diamonds", false, 11))
         this._deck.push(new Card("Ace", "Spades", false, 11))
@@ -80,8 +82,8 @@ export class Deck{
 
     // shuffles the deck of cards
     ShuffleDeck(): void {
-        this._deck.sort((a,b)=> 0.5 - Math.random());
-        this._deck.sort
+        // this._deck.sort((a,b)=> 0.5 - Math.random());
+        // this._deck.sort
         console.log("The deck has been shuffled.\n");
     }
 

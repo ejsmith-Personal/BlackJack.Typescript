@@ -18,12 +18,12 @@ export class GameRunner{
     public playerNameEntry: string;
     public playerDepositEntry: number;
 
-    constructor(Deck: Deck){
+    constructor(){
         this.currentPlayers = [];
         this._dealer = new Player ("Dealer", 99999, true);
         this._player1 = new Player("Placeholder", 0, false);
         this.currentPlayers.push(this._player1, this._dealer)
-        this._drawDeck = Deck;
+        this._drawDeck = new Deck();
     }
 
     GameSetup(): void {
@@ -45,11 +45,11 @@ export class GameRunner{
         // console.log(`The discard deck has ${this._discardDeck._deck.length}`)
         this.currentPlayers.forEach(player => {
             if(player.IsDealerCheck() == false){
-        var playerBetInput = readlineSync.question("How much would you like to bet? \n",);
+                var playerBetInput = readlineSync.question("How much would you like to bet? \n",);
         //this input checking doesn't totally work since it only does it once. maybe a while loop or something would work here.
-        if (Number(playerBetInput)){
+            if (Number(playerBetInput)){
                 player.BetMoney(Number(playerBetInput))
-        } else {
+            } else {
             playerBetInput = readlineSync.question("Please enter a valid $ amount. How much would you like to bet? \n",);
         }
         //I will need to rewrite this if I ever add more players.
@@ -74,17 +74,16 @@ export class GameRunner{
             if(player.IsDealerCheck() == false){
                 player.PrintHandInfo();
                 var lastPlayerAction = this.RequestPlayerToHit(player);
-                if(player.GetHandValue() < 21 && lastPlayerAction !== "S"){
-                    lastPlayerAction = this.RequestPlayerToHit(player);
-                }
-                if(player.GetHandValue() > 21){
-                    console.log(`You have ${player.GetHandValue()}. You have busted!\n`);
-                    player.BustPlayer(true);
-                // commenting this out because the EndRound() method already discards. Even though techincally it should happen here.
-                //player.DiscardCards();
+                while(lastPlayerAction == "H"){
+                    if(player.GetHandValue() < 21){
+                        lastPlayerAction = this.RequestPlayerToHit(player);
+                    }
+                    if(player.GetHandValue() > 21){
+                        console.log(`You have ${player.GetHandValue()}. You have busted!\n`);
+                        player.BustPlayer(true);
+                        }
+                    }
             }
-            //need logic to continue asking if player would like to hit. FOr now we'll do nothing just to exit the loop.
-        }
             if (player.IsDealerCheck() == true){
                 player.CurrentCards[1]?.TurnCardFaceUp();
                 player.PrintHandInfo();
@@ -162,10 +161,12 @@ export class GameRunner{
             // this._drawDeck.DrawCardAndDeal(player, false, this._drawDeck, this._discardDeck);
             console.log(`Current hand value: ${player.GetHandValue()}\n`);
             return playerHitOrStay;
-        } else {
+        } 
+        else if (playerHitOrStay == "S") {
             console.log(`${player.GetPlayerName()} will stay with ${player.GetHandValue()}\n`);
             return playerHitOrStay;
         }
+        return playerHitOrStay;
     }
 
     RequestPlayerName(): void{
@@ -257,6 +258,16 @@ export class GameRunner{
             
         });
         discardDeck._deck.length = 0;
+    }
+
+    RequestPlayerBet(player: Player){
+        var playerBetInput = readlineSync.question("How much would you like to bet? \n",);
+        //this input checking doesn't totally work since it only does it once. maybe a while loop or something would work here.
+            if (Number(playerBetInput)){
+                player.BetMoney(Number(playerBetInput))
+            } else {
+            playerBetInput = readlineSync.question("Please enter a valid $ amount. How much would you like to bet? \n",);
+        }
     }
 }
 
