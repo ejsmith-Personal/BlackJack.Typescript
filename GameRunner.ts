@@ -69,14 +69,24 @@ export class GameRunner{
         //will need to be rewritten for multiple players.
         if(player.GetHandValue() == 21){
             console.log(`${player.GetPlayerName()} has Blackjack!`)
+            //this shoudl really be times 1.5, but I don't want to deal with decimals.
+            player.CurrentBet = player.CurrentBet * 2;
             this.EndRound()
         }
             if(player.IsDealerCheck() == false){
                 player.PrintHandInfo();
                 var lastPlayerAction = this.RequestPlayerToHit(player);
-                while(lastPlayerAction !== "S"){
-                    if(player.GetHandValue() < 21){
+                switch(lastPlayerAction){
+                    case "H":
+                        if(player.GetHandValue() < 21){
                         lastPlayerAction = this.RequestPlayerToHit(player);
+                        break;
+                    }  
+                    case "D":
+                        break;
+
+                    case "S":
+                        break;
                     }
                     if(player.GetHandValue() > 21){
                         console.log(`You have ${player.GetHandValue()}. You have busted!\n`);
@@ -84,23 +94,22 @@ export class GameRunner{
                         lastPlayerAction = "S";
                         }
                     }
-            }
             if (player.IsDealerCheck() == true){
-                player.CurrentCards[1]?.TurnCardFaceUp();
-                player.PrintHandInfo();
-                while(player.GetHandValue() <= 16){
-                    console.log(`The ${player.GetPlayerName()} hits.`)
-                    player.ReceiveCard(this._drawDeck.DrawCard());
-                    if(player.GetHandValue() > 16 && player.GetHandValue() < 22){
-                    console.log(`The ${player.GetPlayerName()} now has ${player.GetHandValue()}.`)
-                }
+                    player.CurrentCards[1]?.TurnCardFaceUp();
+                    player.PrintHandInfo();
+                    while(player.GetHandValue() <= 16){
+                        console.log(`The ${player.GetPlayerName()} hits.`)
+                        player.ReceiveCard(this._drawDeck.DrawCard());
+                        if(player.GetHandValue() > 16 && player.GetHandValue() < 22){
+                            console.log(`The ${player.GetPlayerName()} now has ${player.GetHandValue()}.`)
+                        }       
                     if(player.GetHandValue() > 21){
-                    console.log(`The dealer has ${player.GetHandValue()}. The dealer has busted!\n`)
-                    player.BustPlayer(true);
-                };
-            }
+                        console.log(`The dealer has ${player.GetHandValue()}. The dealer has busted!\n`)
+                        player.BustPlayer(true);
+                    };
+                }
             if (player.IsPlayerBusted() == false){
-            console.log(`The ${player.GetPlayerName()} stays with ${player.GetHandValue()}.\n`)
+                console.log(`The ${player.GetPlayerName()} stays with ${player.GetHandValue()}.\n`)
             }
         }
     }
@@ -159,6 +168,14 @@ export class GameRunner{
             console.log(`Current hand value: ${player.GetHandValue()}\n`);
             return playerHitOrStay;
         } 
+        if (playerHitOrStay == "D"){
+            player.BetMoney(player.CurrentBet);
+            player.CurrentBet = player.CurrentBet * 2;
+            console.log(`${player.GetPlayerName()} has doubled down!\nCurrent Bet is: $${player.CurrentBet}.\n`)
+            player.ReceiveCard(this._drawDeck.DrawCard());
+            console.log(`${player.GetPlayerName()} will stay with ${player.GetHandValue()}\n`);
+            return playerHitOrStay;
+        }
         else if (playerHitOrStay == "S") {
             console.log(`${player.GetPlayerName()} will stay with ${player.GetHandValue()}\n`);
             return playerHitOrStay;

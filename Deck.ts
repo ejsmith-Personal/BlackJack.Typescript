@@ -82,8 +82,8 @@ export class Deck{
 
     // shuffles the deck of cards
     ShuffleDeck(): void {
-        // this._deck.sort((a,b)=> 0.5 - Math.random());
-        // this._deck.sort
+        this._deck.sort((a,b)=> 0.5 - Math.random());
+        this._deck.sort
         console.log("The deck has been shuffled.\n");
     }
 

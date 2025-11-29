@@ -130,11 +130,17 @@ export class Player{
     }
 
     HitOrStay(): string {
-        var answer = readlinesync.question("Would you like to (H)it or (S)tay? \n",).toUpperCase();
+        if (this.IsDealerCheck() == false && this.GetHandValue() == 10 || this.GetHandValue() == 11 ){
+            var answer = readlinesync.question("Would you like to (H)it, (S)tay or (D)ouble Down \n",).toUpperCase();
+        } else { 
+            answer = readlinesync.question("Would you like to (H)it or (S)tay? \n",).toUpperCase();
+        }
         switch (answer){
             case "H":
                 return answer;
             case "S":
+                return answer;
+            case "D":
                 return answer;
             default:
                 console.log("Please enter a valid input");
