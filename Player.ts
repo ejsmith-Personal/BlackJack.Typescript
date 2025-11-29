@@ -138,7 +138,7 @@ export class Player{
                 return answer;
             default:
                 console.log("Please enter a valid input");
-                this.HitOrStay();
+                answer = readlinesync.question("Would you like to (H)it or (S)tay? \n",).toUpperCase();
                 return answer;
         }
     }

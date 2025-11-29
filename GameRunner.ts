@@ -74,7 +74,7 @@ export class GameRunner{
             if(player.IsDealerCheck() == false){
                 player.PrintHandInfo();
                 var lastPlayerAction = this.RequestPlayerToHit(player);
-                while(lastPlayerAction == "H"){
+                while(lastPlayerAction !== "S"){
                     if(player.GetHandValue() < 21){
                         lastPlayerAction = this.RequestPlayerToHit(player);
                     }
