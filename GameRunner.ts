@@ -81,6 +81,7 @@ export class GameRunner{
                     if(player.GetHandValue() > 21){
                         console.log(`You have ${player.GetHandValue()}. You have busted!\n`);
                         player.BustPlayer(true);
+                        lastPlayerAction = "S";
                         }
                     }
             }
@@ -107,10 +108,6 @@ export class GameRunner{
     EndRound(): void {
         var dealerHandTotal = this._dealer.GetHandValue();
         var everyoneBusted: boolean;
-        if(this._dealer.IsPlayerBusted() && this._player1.IsPlayerBusted())
-            //I need to look at this. This isn't a real situation.
-            everyoneBusted = true;
-        //Need a method to pay out the player bet/subtract from total.
         //win conditions
         this.currentPlayers.forEach(player => {
             //player beats the dealer
